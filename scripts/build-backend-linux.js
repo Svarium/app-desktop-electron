@@ -4,6 +4,15 @@ const path = require('path');
 
 console.log('🐧 Compilando backend para Linux...');
 
+// ⚠️ VALIDACIÓN DE PLATAFORMA
+if (process.platform !== 'linux') {
+  console.error('\n❌ ERROR: Este script solo puede ejecutarse en Linux (o WSL).');
+  console.error(`   Plataforma detectada: ${process.platform}`);
+  console.error('   Si estás en WSL, asegúrate de estar usando el Node.js instalado en Linux, NO el de Windows.');
+  console.error('   Ejecuta: "which node" en WSL para verificar. Debería ser algo como /usr/bin/node');
+  process.exit(1);
+}
+
 try {
   const projectRoot = path.join(__dirname, '..', '..');
   const backendDir = path.join(projectRoot, 'backend');
@@ -21,10 +30,11 @@ try {
   fs.mkdirSync(specDir, { recursive: true });
 
   // Instalar dependencias del backend
-  console.log('📦 Instalando dependencias del backend...');
-  execSync('pip install -r requirements.txt', { 
-    cwd: backendDir, 
-    stdio: 'inherit' 
+  console.log('📦 Instalando dependencias del backend y PyInstaller...');
+  // ⚠️ Usamos python3 -m pip y --break-system-packages para máxima compatibilidad en WSL/Linux
+  execSync('python3 -m pip install -r requirements.txt pyinstaller --break-system-packages', {
+    cwd: backendDir,
+    stdio: 'inherit'
   });
 
   // Configurar PyInstaller para Linux
@@ -58,16 +68,16 @@ try {
   ];
 
   console.log('🔨 Ejecutando PyInstaller para Linux...');
-  const pyinstallerCmd = `python -m PyInstaller ${pyinstallerArgs.join(' ')}`;
-  execSync(pyinstallerCmd, { 
-    cwd: backendDir, 
-    stdio: 'inherit' 
+  const pyinstallerCmd = `python3 -m PyInstaller ${pyinstallerArgs.join(' ')}`;
+  execSync(pyinstallerCmd, {
+    cwd: backendDir,
+    stdio: 'inherit'
   });
 
   // Mover el ejecutable a la ubicación final (sin extensión en Linux)
   const sourceExe = path.join(distDir, 'backend');
   const targetExe = path.join(backendBuildDir, 'backend');
-  
+
   if (fs.existsSync(sourceExe)) {
     fs.copyFileSync(sourceExe, targetExe);
     console.log(`✅ Backend Linux compilado: ${targetExe}`);
@@ -79,7 +89,7 @@ try {
   fs.rmSync(distDir, { recursive: true, force: true });
 
   console.log('\n🎉 Backend Linux compilado exitosamente');
-  
+
 } catch (error) {
   console.error('\n❌ Error al compilar backend Linux:', error.message);
   process.exit(1);

@@ -106,13 +106,29 @@ npm run package:win
 # Genera: dist/Reporte Automático Setup 1.0.0.exe
 ```
 
-#### **Linux (desde Windows o Linux):**
-```bash
-npm run package:linux
+#### **Linux (desde WSL o Linux nativo):**
+> [!IMPORTANT]
+> PyInstaller no permite compilación cruzada. Para generar el binario de Linux, **debes** estar en un entorno Linux. En Windows, lo más sencillo es usar **WSL**.
+
+1. **Configurar WSL (si no lo tienes):**
+   ```bash
+   # En PowerShell como Admin:
+   wsl --install
+   ```
+2. **Instalar dependencias en WSL (Ubuntu):**
+   ```bash
+   sudo apt update
+   sudo apt install -y python3 python3-pip nodejs npm
+   ```
+3. **Empaquetar:**
+   ```bash
+   # Dentro de la terminal de WSL:
+   cd /mnt/c/Users/MICHICOMPU/Desktop/Reporte-automatico/desktop
+   npm run package:linux
+   ```
 # Genera: 
-# - dist/Reporte-Automático-1.0.0.AppImage (universal)
-# - dist/reporte-automatico-desktop_1.0.0_amd64.deb (Debian/Ubuntu)
-```
+# - dist/Reporte-Automático-1.0.0.AppImage (Portable)
+# - dist/reporte-automatico-desktop_1.0.0_amd64.deb (Instalador Ubuntu/Debian)
 
 #### **macOS (solo desde Mac):**
 ```bash

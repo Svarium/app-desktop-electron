@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Reporte Automático Educativo - Desktop App",
   "main": "main.js",
+  "author": "MICHICOMPU <admin@michicompu.com>",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",

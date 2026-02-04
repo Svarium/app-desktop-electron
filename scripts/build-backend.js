@@ -2,7 +2,14 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔧 Compilando backend...');
+console.log('🔧 Compilando backend para Windows...');
+
+// ⚠️ VALIDACIÓN DE PLATAFORMA
+if (process.platform !== 'win32') {
+  console.error('\n❌ ERROR: Este script solo puede ejecutarse en Windows.');
+  console.error('   Para compilar el backend de Linux, usa: npm run build:backend-linux (desde WSL/Linux)');
+  process.exit(1);
+}
 
 try {
   const projectRoot = path.join(__dirname, '..', '..');
@@ -22,9 +29,9 @@ try {
 
   // Instalar dependencias del backend
   console.log('📦 Instalando dependencias del backend...');
-  execSync('pip install -r requirements.txt', { 
-    cwd: backendDir, 
-    stdio: 'inherit' 
+  execSync('pip install -r requirements.txt', {
+    cwd: backendDir,
+    stdio: 'inherit'
   });
 
   // Configurar PyInstaller
@@ -59,15 +66,15 @@ try {
 
   console.log('🔨 Ejecutando PyInstaller...');
   const pyinstallerCmd = `python -m PyInstaller ${pyinstallerArgs.join(' ')}`;
-  execSync(pyinstallerCmd, { 
-    cwd: backendDir, 
-    stdio: 'inherit' 
+  execSync(pyinstallerCmd, {
+    cwd: backendDir,
+    stdio: 'inherit'
   });
 
   // Mover el ejecutable a la ubicación final
   const sourceExe = path.join(distDir, 'backend.exe');
   const targetExe = path.join(backendBuildDir, 'backend.exe');
-  
+
   if (fs.existsSync(sourceExe)) {
     fs.copyFileSync(sourceExe, targetExe);
     console.log(`✅ Backend compilado: ${targetExe}`);
@@ -79,7 +86,7 @@ try {
   fs.rmSync(distDir, { recursive: true, force: true });
 
   console.log('\n🎉 Backend compilado exitosamente');
-  
+
 } catch (error) {
   console.error('\n❌ Error al compilar backend:', error.message);
   process.exit(1);

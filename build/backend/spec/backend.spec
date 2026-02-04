@@ -15,7 +15,7 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
-    ['C:\\Users\\MICHICOMPU\\Desktop\\Reporte-automatico\\backend\\app\\main.py'],
+    ['/mnt/c/Users/MICHICOMPU/Desktop/Reporte-automatico/backend/app/main.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
