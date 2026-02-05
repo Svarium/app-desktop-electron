@@ -78,7 +78,7 @@
       "gatekeeperAssess": false,
       "extraResources": [
         {
-          "from": "build/backend/backend-macos",
+          "from": "build/backend/backend",
           "to": "backend"
         },
         {
