@@ -160,7 +160,32 @@ function createWindow() {
   const frontendPath = getFrontendPath();
   console.log(`📱 Cargando frontend: ${frontendPath}`);
 
+  // Diagnóstico: Verificar si el archivo existe
+  if (!fs.existsSync(frontendPath)) {
+    const errorMsg = `❌ Error Crítico: No se encontró el archivo del frontend en: ${frontendPath}`;
+    console.error(errorMsg);
+
+    // Si la ventana ya existe, mostrar error
+    if (mainWindow) {
+      const { dialog } = require('electron');
+      dialog.showErrorBox('Error de Recursos',
+        `No se pudo encontrar la interfaz de usuario.\nRuta: ${frontendPath}\n\nPor favor, reinstalá la aplicación.`);
+    }
+  }
+
   mainWindow.loadFile(frontendPath);
+
+  // Detectar fallos de carga (ej: problemas de ruta, CSP, etc)
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    console.error(`❌ Fallo al cargar la página: ${errorCode} - ${errorDescription}`);
+    console.error(`URL intentada: ${validatedURL}`);
+
+    if (errorCode !== -3) { // Ignorar cancelaciones normales
+      const { dialog } = require('electron');
+      dialog.showErrorBox('Error de Carga',
+        `La interfaz no pudo iniciarse.\nCódigo: ${errorCode}\nDescripción: ${errorDescription}`);
+    }
+  });
 
   // Mostrar la ventana cuando esté lista
   mainWindow.once('ready-to-show', () => {
