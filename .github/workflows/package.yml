@@ -1,0 +1,95 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout Desktop App
+        uses: actions/checkout@v4
+        with:
+          path: desktop
+
+      - name: Checkout Backend
+        uses: actions/checkout@v4
+        with:
+          repository: Svarium/automatic-report-backend
+          path: backend
+
+      - name: Checkout Frontend
+        uses: actions/checkout@v4
+        with:
+          repository: Svarium/Automatic-Reports-Frontend
+          path: frontend
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: './desktop/package-lock.json'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 1. Compilar Backend
+      - name: Build Backend
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+          pyinstaller --noconfirm --onefile --windowed --name backend --add-data "data:data" app/main.py
+        shell: bash
+
+      # 2. Construir Frontend
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+        shell: bash
+
+      # 3. Preparar Desktop y Empaquetar
+      - name: Build Desktop and Package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd desktop
+          npm install
+          
+          # Crear carpeta build si no existe
+          mkdir -p build/backend
+          mkdir -p build/frontend/dist
+          
+          # Copiar resultados según plataforma
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            cp ../backend/dist/backend.exe build/backend/backend.exe
+          else
+            cp ../backend/dist/backend build/backend/backend
+          fi
+          
+          cp -r ../frontend/dist/* build/frontend/dist/
+          
+          # Empaquetar usando electron-builder
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            npx electron-builder --win --publish always
+          elif [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            npx electron-builder --linux --publish always
+          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+            npx electron-builder --mac --publish always
+          fi
+        shell: bash
