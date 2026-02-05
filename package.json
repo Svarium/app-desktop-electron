@@ -80,10 +80,6 @@
         {
           "from": "build/backend/backend",
           "to": "backend"
-        },
-        {
-          "from": "build/frontend/dist",
-          "to": "frontend"
         }
       ]
     },
@@ -108,10 +104,6 @@
         {
           "from": "build/backend/backend",
           "to": "backend"
-        },
-        {
-          "from": "build/frontend/dist",
-          "to": "frontend"
         }
       ]
     },
