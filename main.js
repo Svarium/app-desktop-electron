@@ -14,12 +14,15 @@ let backendProcess;
 
 // Función para obtener la ruta del backend
 function getBackendPath() {
+  const isWin = process.platform === 'win32';
+  const backendName = isWin ? 'backend.exe' : 'backend';
+
   if (app.isPackaged) {
-    // Producción: resources/backend.exe
-    return path.join(process.resourcesPath, 'backend.exe');
+    // Producción: resources/backend.exe o resources/backend
+    return path.join(process.resourcesPath, backendName);
   } else {
-    // Desarrollo: build/backend/backend.exe
-    return path.join(__dirname, 'build', 'backend', 'backend.exe');
+    // Desarrollo: build/backend/backend.exe o build/backend/backend
+    return path.join(__dirname, 'build', 'backend', backendName);
   }
 }
 
@@ -57,7 +60,7 @@ function ensureLogsDirectory() {
 // Función para esperar a que el backend esté listo
 async function waitForBackend(maxAttempts = 30, delay = 2000) {
   const axios = require('axios');
-  
+
   for (let i = 0; i < maxAttempts; i++) {
     try {
       const response = await axios.get('http://127.0.0.1:8000/health', { timeout: 5000 });
@@ -68,10 +71,10 @@ async function waitForBackend(maxAttempts = 30, delay = 2000) {
     } catch (error) {
       console.log(`⏳ Intento ${i + 1}/${maxAttempts}: Backend no responde...`);
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, delay));
   }
-  
+
   throw new Error('❌ Backend no respondió en el tiempo esperado');
 }
 
@@ -80,45 +83,45 @@ function startBackend() {
   const backendPath = getBackendPath();
   const logsDir = ensureLogsDirectory();
   const logFile = path.join(logsDir, 'backend.log');
-  
+
   console.log(`🚀 Iniciando backend: ${backendPath}`);
-  
+
   // Verificar que el backend exista
   if (!fs.existsSync(backendPath)) {
     throw new Error(`❌ Backend no encontrado: ${backendPath}`);
   }
-  
+
   // Crear stream de logs
   const logStream = fs.createWriteStream(logFile, { flags: 'a' });
-  
+
   // Iniciar proceso del backend
   backendProcess = spawn(backendPath, [], {
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: false
   });
-  
+
   // Redirigir salida a logs
   backendProcess.stdout.pipe(logStream);
   backendProcess.stderr.pipe(logStream);
-  
+
   // También mostrar en consola para desarrollo
   backendProcess.stdout.on('data', (data) => {
     console.log(`[Backend] ${data.toString().trim()}`);
   });
-  
+
   backendProcess.stderr.on('data', (data) => {
     console.error(`[Backend ERROR] ${data.toString().trim()}`);
   });
-  
+
   backendProcess.on('error', (error) => {
     console.error('❌ Error al iniciar backend:', error);
     throw error;
   });
-  
+
   backendProcess.on('close', (code) => {
     console.log(`🔚 Backend process exited with code ${code}`);
   });
-  
+
   return backendProcess;
 }
 
@@ -140,7 +143,7 @@ function createWindow() {
 
   // Configurar zoom por defecto para que coincida con la versión web
   mainWindow.webContents.setZoomFactor(1.0);
-  
+
   // Prevenir que el zoom cambie automáticamente al maximizar
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.setZoomFactor(1.0);
@@ -156,13 +159,13 @@ function createWindow() {
   // Cargar el frontend
   const frontendPath = getFrontendPath();
   console.log(`📱 Cargando frontend: ${frontendPath}`);
-  
+
   mainWindow.loadFile(frontendPath);
 
   // Mostrar la ventana cuando esté lista
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    
+
     // En desarrollo, abrir DevTools
     if (process.argv.includes('--dev')) {
       mainWindow.webContents.openDevTools();
@@ -178,25 +181,38 @@ function createWindow() {
 app.whenReady().then(async () => {
   try {
     console.log('🚀 Iniciando aplicación...');
-    
+
     // Iniciar backend
     startBackend();
-    
+
     // Esperar a que el backend esté listo
     await waitForBackend();
-    
+
     // Crear y mostrar ventana principal
     createWindow();
-    
+
     console.log('✅ Aplicación iniciada correctamente');
-    
+
   } catch (error) {
     console.error('❌ Error al iniciar la aplicación:', error);
-    
-    // Mostrar mensaje de error
-    const { dialog } = require('electron');
-    dialog.showErrorBox('Error de Inicio', `No se pudo iniciar la aplicación:\n\n${error.message}`);
-    
+
+    // Mostrar mensaje de error con opción de ver logs
+    const { dialog, shell } = require('electron');
+    const logsDir = getLogsDirectory();
+
+    const choice = dialog.showMessageBoxSync({
+      type: 'error',
+      title: 'Error de Inicio',
+      message: `No se pudo iniciar la aplicación:\n\n${error.message}`,
+      detail: 'Esto puede deberse a un conflicto con el puerto 8000 o a que el antivirus bloqueó el motor interno.',
+      buttons: ['Ver Logs', 'Cerrar'],
+      defaultId: 1
+    });
+
+    if (choice === 0) {
+      shell.openPath(logsDir);
+    }
+
     app.quit();
   }
 });
@@ -208,7 +224,7 @@ app.on('window-all-closed', () => {
     console.log('🛑 Cerrando backend...');
     backendProcess.kill();
   }
-  
+
   if (process.platform !== 'darwin') {
     app.quit();
   }

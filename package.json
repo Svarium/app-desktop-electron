@@ -35,10 +35,6 @@
     ],
     "extraResources": [
       {
-        "from": "build/backend/backend.exe",
-        "to": "backend.exe"
-      },
-      {
         "from": "build/frontend/dist",
         "to": "frontend"
       }
@@ -58,7 +54,13 @@
       "verifyUpdateCodeSignature": false,
       "certificateFile": null,
       "certificatePassword": null,
-      "publisherName": null
+      "publisherName": null,
+      "extraResources": [
+        {
+          "from": "build/backend/backend.exe",
+          "to": "backend.exe"
+        }
+      ]
     },
     "mac": {
       "target": [
