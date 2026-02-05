@@ -12,6 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
 
@@ -52,7 +53,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
-          pyinstaller --noconfirm --onefile --windowed --name backend --add-data "data:data" app/main.py
+          pyinstaller --noconfirm --onefile --windowed --name backend app/main.py
         shell: bash
 
       # 2. Construir Frontend
