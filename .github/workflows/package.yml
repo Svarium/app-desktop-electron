@@ -30,12 +30,14 @@ jobs:
         with:
           repository: Svarium/automatic-report-backend
           path: backend
+          ref: develop
 
       - name: Checkout Frontend
         uses: actions/checkout@v4
         with:
           repository: Svarium/Automatic-Reports-Frontend
           path: frontend
+          ref: develop
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
