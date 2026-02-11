@@ -58,7 +58,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
-          pyinstaller --noconfirm --onefile --windowed --name backend app/main.py
+          
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
+            # En macOS usamos onedir (sin --onefile) por estabilidad y seguridad (SIGTRAP)
+            pyinstaller --noconfirm --windowed --name backend --paths . app/main.py
+          else
+            # Windows y Linux mantienen onefile con --paths . para rutas de importación
+            pyinstaller --noconfirm --onefile --windowed --name backend --paths . app/main.py
+          fi
         shell: bash
 
       # 2. Construir Frontend
@@ -84,6 +91,10 @@ jobs:
           # Copiar resultados según plataforma
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             cp ../backend/dist/backend.exe build/backend/backend.exe
+          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+            # macOS onedir: copiamos toda la carpeta del backend
+            rm -rf build/backend/backend
+            cp -r ../backend/dist/backend build/backend/backend
           else
             cp ../backend/dist/backend build/backend/backend
           fi
