@@ -1,6 +1,6 @@
 {
   "name": "reporte-automatico-desktop",
-  "version": "1.0.0",
+  "version": "1.0.12",
   "description": "Reporte Automático Educativo - Desktop App",
   "main": "main.js",
   "author": "MICHICOMPU <admin@michicompu.com>",
@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "electron": "^28.0.0",
-    "electron-builder": "^23.6.0"
+    "electron-builder": "^24.13.3"
   },
   "build": {
     "appId": "com.reporteautomatico.app",

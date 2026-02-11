@@ -25,6 +25,10 @@ jobs:
         with:
           path: desktop
 
+      - name: Disable Spotlight (macOS only)
+        if: matrix.os == 'macos-latest'
+        run: sudo mdutil -a -i off
+
       - name: Checkout Backend
         uses: actions/checkout@v4
         with:
