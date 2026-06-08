@@ -144,6 +144,27 @@ npm run package:all
 
 ---
 
+## 🚀 **Release / Publicación Automática (GitHub Actions)**
+
+Para disparar una nueva release usando GitHub Actions (compilación automática para Windows, Linux y macOS en la nube), los pasos son:
+
+1. **Actualizar la versión**: Cambia `"version"` en el archivo `package.json` de la carpeta `desktop` (y preferiblemente también en `frontend/package.json`). *Ejemplo: de `1.3.1` a `1.4.0` si añades funcionalidades como el selector de idiomas.*
+2. **Confirmar cambios (Commit)**:
+   ```bash
+   git add .
+   git commit -m "Bump version to 1.4.0"
+   ```
+3. **Crear y subir el Tag**:
+   ```bash
+   git tag v1.4.0
+   git push origin v1.4.0
+   ```
+   *Nota: El flujo de GitHub Actions (`.github/workflows/package.yml`) detectará automáticamente el tag que empieza con "v" e iniciará el empaquetado para todas las plataformas.*
+
+> **Alternativa Manual**: También puedes ir a tu repositorio en GitHub > **Actions** > **Build and Release** > click en **Run workflow**.
+
+---
+
 ## 🐛 **Troubleshooting**
 
 ### **Problemas comunes:**
